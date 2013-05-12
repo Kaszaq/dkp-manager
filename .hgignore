@@ -1,0 +1,4 @@
+syntax: glob
+Libs/AceConfig-3.0
+Libs/AceHook-3.0
+Libs/AceConsole-3.0
