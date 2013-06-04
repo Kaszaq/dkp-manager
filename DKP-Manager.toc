@@ -1,8 +1,9 @@
-## Interface: 50200
+## Interface: 50300
 ## Title: DKP - |CFF2459FFManager
 ## Notes: Manager for DKP points. Requires DKP - Bidder as main Graphic User Interface.
-## Dependencies:DKP-Bidder
+## Dependencies: DKP-Bidder
 ## OptionalDeps: DBM-Core
 ## SavedVariablesPerCharacter: DKPmanagerDB
-## Version: 520 2xx
+## Version: 530 101
+
 embeds.xml

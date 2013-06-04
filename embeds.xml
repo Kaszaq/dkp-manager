@@ -10,5 +10,7 @@
 <Script file="Libs\DKPlog-1.0\DKPlog-1.0.lua"/>
 <Script file="initialize.lua"/>
 <Script file="mng_createGUI.lua"/>
+<Script file="mng_standbyGUI.lua"/>
 <Script file="communicationFunctions.lua"/>
+
 </Ui> 

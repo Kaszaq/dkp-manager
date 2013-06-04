@@ -35,6 +35,21 @@ local function Log(main,changetime,name,dkpchange,newdkp,reason,zone,loggername)
 	end
 
 end
+
+--Log to manually change a players Overal DKP awarded if reimbursing above.
+local function TotLog(main,changetime,name,dkpchange,newdkp,reason,zone,loggername)
+	print("LOG: ",main,changetime,name,dkpchange,newdkp,reason,zone,loggername);
+	if DB.logData[main]==nil then DB.logData[main]={}; end;
+	table.insert(DB.logData[main],1,{changetime,name,0,tonumber(newdkp),reason,zone,loggername});
+	GRI:SetTot(main,GRI:GetTot(main)+tonumber(dkpchange));
+	if loggername==UnitName("player") then
+		local sendData={msg="loginput",data={main,changetime,name,0,newdkp,reason,zone,loggername}};
+		DKPlog:SendCommMessage(prefix, DKPlog:Serialize(sendData), "GUILD"); --if (action.amount~=0) then end;
+		GuildRosterSetOfficerNote(GRI:GetId(main),"N:"..GRI:GetNet(main).." T:"..GRI:GetTot(main));--todo: 17.08.2012 this part was removed to clean code. Althoguht it might happen it was needed to be this way!if tonumber(dkpchange)~=0 then  [..] end
+	end
+
+end
+
 --local functions
 local function Lock(playerName)
 	if not DKPlog.initialized then return; end;
@@ -103,6 +118,13 @@ function DKPlog:SetDB(data)
 	GRI:UpdateData()
 end
 
+function DKPlog:SetCap(cap)
+	if cap>0 then
+		DB.dkpCap=cap
+	else
+		DB.dkpCap=nil
+	end
+end
 ---
 function DKPlog:GetLog(name)
 	if not DKPlog.initialized then return; end;
@@ -121,15 +143,19 @@ local function ApplyActions()
 		if DB.locked==UnitName("player") then--REAL APPLY PART! TODO: Remake it. It has to remove 1. dkp from notes 2. remove values from playerdata. important!: Firstly remove from playerdata, then from note! After that acknowledge of the change.
 			--DKPlog:Print("Applying actions");
 			for index,action in ipairs(DB.actions) do
-
+				--LOG: main, changetime, name, dkpchange, newdkp, reason, zone, loggername;
 				if action.type=="dkpchange" then
 					if GRI:GetNet(action.mainName)+tonumber(action.amount)>=0 then
 
 						Log(action.mainName,action.time,action.name,action.amount,GRI:GetNet(action.mainName)+action.amount,action.reason,action.zone,UnitName("player"));
+						if DB.dkpCap and GRI:GetNet(action.mainName) > DB.dkpCap then
+							Log(action.mainName, action.time, action.name, DB.dkpCap-GRI:GetNet(action.mainName), DB.dkpCap, "Autocap DKP to "..DB.dkpCap, action.zone, UnitName("player"));
+						end
 						DKPlog.callbacks:Fire("ActionComplete",action); --or not, if the points do not match!
 					else
 						DKPlog.callbacks:Fire("ActionFailed",action);
 					end
+					
 				elseif action.type=="setalt" then
 					if action.alt==action.main then
 						if action.alt~=GRI:GetMain(action.alt) then
@@ -154,6 +180,11 @@ local function ApplyActions()
 						GRI:SetMain(action.alt,action.main);
 						GuildRosterSetOfficerNote(GRI:GetId(action.alt),action.main);
 					end;
+					
+				elseif action.type=="dkptotchange" then	
+					if GRI:GetTot(action.mainName)+tonumber(action.amount)>=0 then
+						TotLog(action.mainName, action.time, action.name, action.amount, GRI:GetNet(action.mainName), action.reason, action.zone, UnitName("player"));
+					end
 				end
 
 			end;
@@ -194,6 +225,23 @@ function DKPlog:AddAction(name,amount,reason)
 	DKPlog:ScheduleApplyActions()
 	GuildRoster();
 end;
+
+function DKPlog:AddTotAction(name,amount,reason)
+	if not DKPlog.initialized then return; end;
+	GRI:UpdateData();
+	local action={};
+	action.type="dkptotchange";
+	action.mainName=GRI:GetMain(name);
+	action.name=name;
+	action.time=time();
+	action.amount=amount;
+	action.reason=reason;
+	action.zone=GetRealZoneText();
+	table.insert(DB.actions,action);
+	DKPlog:ScheduleApplyActions()
+	GuildRoster();
+end
+
 function DKPlog:SetAlt(main,alt)
 	if not DKPlog.initialized then return; end;
 	GRI:UpdateData();
