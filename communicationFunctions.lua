@@ -496,7 +496,7 @@ function A:OnCommReceived(prefix, message, distribution, sender)
 						B.view.standbyFrame:UpdateList()
 						A.standby.receivedDKP[main]=true
 						if GRI:IsOnList(main) then
-							A:AddAction(main,tonumber(data.amount),"[TEST]On Standby for "..data.boss.." kill");
+							A:AddAction(main,tonumber(data.amount),"On Standby for "..data.boss.." kill");
 						else
 							A:Print("ERROR: Could not award "..main.." standby DKP, not on GRI list.");
 						end;
