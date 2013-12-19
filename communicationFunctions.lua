@@ -11,6 +11,7 @@ A.zeroSumPoints=0;
 A.transferFrom="Transfer from ";
 A.transferTo="Transfer to ";
 
+
 function A:SendChanges(callbackname,action)
 	if string.find(action.reason,A.transferTo) then
 		local ret=string.sub(action.reason,#A.transferTo+1)
@@ -18,7 +19,7 @@ function A:SendChanges(callbackname,action)
 	end
 
 	if action.amount and action.amount~=0 then
-		local message="Your dkp has changed by "..action.amount..". Reason: "..action.reason..". Your new dkp amount is "..GRI:GetNet(action.name);
+		local message="Your dkp have changed by "..action.amount..". Reason: "..action.reason..". Your new dkp amount is "..GRI:GetNet(action.name);
 		local name=GRI:GetOnlineName(action.name);
 		if name~=nil then
 			A:Send("info",message,"WHISPER",name);
@@ -28,12 +29,13 @@ function A:SendChanges(callbackname,action)
 end
 function A:SendFailed(callbackname,action)
 	if string.find(action.reason,A.transferTo) then
-		A:Send("error","You do not have enough points to make this transfer. Currently you have "..GRI:GetNet(action.name).." points. Action failed: "..action.reason,"WHISPER",action.name);
+		A:Send("error","You do not have enaugh points to make this transfer. Currently you have "..GRI:GetNet(action.name).." points. Action failed: "..action.reason,"WHISPER",action.name);
 	elseif action.amount and action.amount~=0 then
-		A:Print("Player "..action.name.."dkp could not be changed by "..action.amount.." because "..action.reason..". Their dkp amount is "..GRI:GetNet(action.name));
+		A:Print("Player "..action.name.."dkp could not have been changed by "..action.amount.." becouse of "..action.reason..". His dkp amount is "..GRI:GetNet(action.name));
 	end
 
 end
+
 
 function A:Send(msg,data,dist,target)
 	local sendData={msg=msg,data=data};
@@ -42,27 +44,31 @@ function A:Send(msg,data,dist,target)
 	self:SendCommMessage(B.prefix,msg,dist,target);
 end;
 
+
 function A:StartBids(item)
+
 	self:CancelAllTimers();
 	SendChatMessage("<DKP-Manager> Auction for "..item.." started.","RAID");
-	A.biddingStartTime=GetTime();	
+	A.biddingStartTime=GetTime();
+
 	wipe(A.bidTable);
+
 	A.highestBid=-1;
 	A.biddingItem=item;
+
 	A:SetBiddingState(true);
 	local v=B.view.adminFrame.view;
 	v.awardButton:Disable();
-	v.disenchantButton:Disable();
-	for i=1, 40 do
+	for i=1, MAX_RAID_MEMBERS do
 		local name=GetRaidRosterInfo(i);
-		if name and GRI:IsOnList(name) and GRI:IsOnline(name) then
+
+		if GRI:IsOnList(name) and GRI:IsOnline(name) then
 			self:Send("startBids",{minBid=A.DB.minBid,item=item},"WHISPER", name);
 		end
 	end;
 	if A.DB.autoStartTimer then
 		self:SendStartTimer(A.DB.timerAmount);
-		if A.DB.stopBidsOnTimeOut then 
-			self:ScheduleTimer(A.TimerStopBids, (A.DB.timerAmount+1.5), self); end;
+		if A.DB.stopBidsOnTimeOut then self:ScheduleTimer(A.TimerStopBids, (A.DB.timerAmount+1), self); end;
 
 	end;
 end
@@ -71,10 +77,9 @@ function A:TimerStopBids()
 	self.wasStopedByTimer=true;
 	self:StopBids();
 end
-
 function A:StopBids()
 	self:CancelAllTimers();
-	SendChatMessage("<DKP-Manager> Auction for "..A.biddingItem.." stopped.","RAID");
+	SendChatMessage("<DKP-Manager> Auction for "..A.biddingItem.." stoped.","RAID");
 	if A.DB.silenceBidding then
 		for i,v in pairs(A.bidTable) do
 			self:BroadcastBid(i,v,A.bidTable[i].time);
@@ -85,18 +90,15 @@ function A:StopBids()
 	local count=0;
 	for i,v in pairs(A.bidTable) do
 		count=count+1;
-		if A.DB.silenceBidding then 
-			self:BroadcastBid(v.amount,i,v.time); 
-		end;
+		if A.DB.silenceBidding then self:BroadcastBid(v.amount,i,v.time); end;
 	end
 	local v=B.view.adminFrame.view;
 	if count>0 then
 		v.awardButton:Enable();
 	end
-	v.disenchantButton:Enable();
 
 	self:Send("stopBids",nil,"RAID");
-	A.highestBid=9999999999999; -- <--Completely STOPS bids being accepted by MLooter
+	A.highestBid=9999999999999;
 	if A.DB.awardIfStopBidsOnTimeOut and self.wasStopedByTimer then
 		self.wasStopedByTimer=nil;
 		self:AwardPlayer();
@@ -104,6 +106,7 @@ function A:StopBids()
 end
 
 function A:BroadcastBid(amount,name,timeOfBid)
+
 	if not (A.DB.silenceBidding and A.biddingInProgress) then
 		if not timeOfBid then timeOfBid=GetTime() end;
 		self:Send("broadcastBid",{bidderName=name,amount=amount,timeOfBid=timeOfBid}, "RAID");
@@ -113,6 +116,8 @@ function A:BroadcastBid(amount,name,timeOfBid)
 			if A.DB.stopBidsOnTimeOut then self:ScheduleTimer(A.TimerStopBids, (A.DB.timerAmount+1), self); end;
 		end
 	end;
+
+
 end
 
 --[[ TODO: test before release
@@ -125,7 +130,7 @@ function A:AnalizeBid(amount,name)
 	amount=tonumber(amount);
 	if A.DB.silenceBidding or A.DB.biddingType=="sh" then self:Send("info","Your bid for "..amount.." has been received", "WHISPER",name) end;
 	if amount>GRI:GetNet(name) then
-		self:Send("error","You do not have enough points to bid "..amount..". You only have "..GRI:GetNet(name).." points.","WHISPER",name);
+		self:Send("error","You do not have enaught points to bid "..amount..". You have only "..GRI:GetNet(name).." points.","WHISPER",name);
 		return;
 	end;
 	local time=(math.floor((GetTime()-A.biddingStartTime)*100))/100;
@@ -176,10 +181,6 @@ function A:AnalizeBid(amount,name)
 			A.bidTable[name].amount=amount;
 			A.bidTable[name].time=time;
 		end;
-	--Adding a way to completely REMOVE your bid by bidding "0" useful for accidental biddings.
-	elseif A.DB.silenceBidding and A.DB.allowbidremove and A.bidTable[name] and amount==0 then
-		A.bidTable[name]={}
-		self:Send("info","You have been removed from the bidding list", "WHISPER",name)
 	else
 		self:Send("error","The amount you want to bid must be greater then or equal to "..(A.DB.minBid-1),"WHISPER",name);
 	end;
@@ -249,6 +250,7 @@ end;
 	end;
 end;]]
 function A:AwardPlayer()
+
 	local v=B.view.adminFrame.view;
 	local item=A.biddingItem
 	if item==nil then return end;
@@ -311,7 +313,7 @@ function A:AwardPlayer()
 				local numberOfMembers=0;
 				for i=1, MAX_RAID_MEMBERS do
 					name=GetRaidRosterInfo(i);
-					if name and GRI:IsOnList(name) then numberOfMembers=numberOfMembers+1; end
+					if GRI:IsOnList(name) then numberOfMembers=numberOfMembers+1; end
 				end
 				local shareAmount=amount+self.zeroSumPoints;
 				if numberOfMembers>1 then
@@ -320,7 +322,7 @@ function A:AwardPlayer()
 				end;
 				for i=1, MAX_RAID_MEMBERS do
 					name=GetRaidRosterInfo(i);
-					if name and GRI:IsOnList(name) then
+					if GRI:IsOnList(name) then
 						A:AddAction(name,tonumber(amount),"ZeroSum for "..item);
 					end;
 				end;
@@ -328,8 +330,10 @@ function A:AwardPlayer()
 
 			end
 			if isML and GetNumLootItems()>0 then
+
 				local playerNr
 				local found=0;
+
 				local slot=0;
 				for i=1,GetNumLootItems() do
 					item2=GetLootSlotLink(i);
@@ -346,7 +350,7 @@ function A:AwardPlayer()
 					GiveMasterLoot(slot, playerNr)
 				end;
 				if found~=2 then
-					self:Print("Unable to award player with item. Try to do it manually, but most likely player is not permited to take that item.");
+					self:Print("Unable to award player with item. Try to do it manually, but most likly player is not permited to take that item.");
 				end;
 			end;
 
@@ -355,48 +359,9 @@ function A:AwardPlayer()
 			return;
 		end
 	else
-		self:Print("No bids were received.");
+		self:Print("No bids were recevied.");
 	end;
 	v.awardButton:Disable();
-	v.disenchantButton:Disable();
-end
-
-function A:AwardDisenchanter()
-	local v=B.view.adminFrame.view;
-	local item=A.biddingItem
-	if item==nil then return end;
-	local method, partyMaster, raidMaster = GetLootMethod()
-	
-	if A.DB.disenchantPlayer and raidMaster~=nil and GetRaidRosterInfo(raidMaster)==UnitName("player") and UnitInRaid(A.DB.disenchantPlayer) and GetNumLootItems()>0 then
-		local playerNr
-		local found=0;
-		local slot=0;
-		for i=1,GetNumLootItems() do
-			item2=GetLootSlotLink(i);
-			if (item2~=nil) and item2==item then
-				slot=i;
-				found=found+1;
-				break;
-			end;
-		end;
-		for i=1, MAX_RAID_MEMBERS do
-			if A.DB.disenchantPlayer == GetMasterLootCandidate(slot, i) then playerNr=i; found=found+1; break; end;
-		end
-		if found==2 then
-			GiveMasterLoot(slot, playerNr)
-			--SendChatMessage("<DKP-Manager> Sent "..item.." to "..A.DB.disenchantPlayer.. " for DE.","RAID");
-			self:Print("Sent item to "..A.DB.disenchantPlayer.." for DE")
-		end;
-		if found~=2 then
-			self:Print("Unable to award player with item. Try to do it manually, but most likely player is not permited to take that item.");
-		end;		
-	elseif A.DB.disenchantPlayer==nil then
-		self.Print("You must add a disenchant player in the options!");
-	elseif not UnitInRaid(A.DB.disenchantPlayer) then
-		self.Print("Your disenchanter is not in the raid!");
-	end
-	v.awardButton:Disable();
-	v.disenchantButton:Disable();
 end
 
 function A:AskForVersion(arg)
@@ -413,9 +378,6 @@ end
 function A:AddAction(name,amount,reason)
 	 A:CheckCommand("AddAction",name,amount,reason);
 end
-function A:AddTotAction(name,amount,reason)
-	 A:CheckCommand("AddTotAction",name,amount,reason);
-end
 
 function A:SetAlt(main,alt)
 	A:CheckCommand("SetAlt",main,alt);
@@ -427,14 +389,16 @@ function A:CheckCommand(typ,arg1,arg2,arg3)
 			A.log:AddAction(arg1,arg2,arg3);
 		elseif typ=="SetAlt" then
 			A.log:SetAlt(arg1,arg2);
-		elseif typ=="AddTotAction" then
-			A.log:AddTotAction(arg1,arg2,arg3);
 		end;
 	end;
 end
 
+
+
 function A:OnCommReceived(prefix, message, distribution, sender)
+
 	suc,data=self:Deserialize(message);
+
 	if suc then
 		local msg=data.msg;
 		local data=data.data
@@ -447,7 +411,7 @@ function A:OnCommReceived(prefix, message, distribution, sender)
 			elseif msg=="startBids" then
 				if A.biddingInProgress and sender~=UnitName("player") then
 					A:SetBiddingState(false);
-					A:Print("Bidding stopped, as session was overtaken by "..sender);
+					A:Print("Bidding stoped, as session was overtaken by "..sender);
 				end
 			elseif msg=="playerBid" then
 				A:AnalizeBid(tonumber(data),sender);
@@ -459,7 +423,7 @@ function A:OnCommReceived(prefix, message, distribution, sender)
 						elseif tonumber(data.amount)<=0 then
 							A:Send("error","The amount of points to transfer must be greater then 0.","WHISPER",sender);
 						else
-							A:Send("error","You do not have enough points. Currently you have "..GRI:GetNet(sender).." when you are trying to transfer "..data.amount.." to player "..data.transferTo..".","WHISPER",sender);
+							A:Send("error","You do not have enaugh points. Currently you have "..GRI:GetNet(sender).." when you are trying to transfer "..data.amount.." to player "..data.transferTo..".","WHISPER",sender);
 						end
 					else
 						A:Send("error",UnitName("player").." settings do not allow dkp transfer, sorry. For more information ask an officer.","WHISPER",sender);
@@ -471,48 +435,26 @@ function A:OnCommReceived(prefix, message, distribution, sender)
 				--[[if ver<B:GetVersion() and A.DB.broadcastBidderUpdate then --TODO: remove or finish
 					--SendAddonMessage("QDKP_ksqBid","error#".."There is new version available: "..B.colors["red"]..B.ver,"WHISPER",sender);
 				end]]
-				
-			--SUCCESSFUL STANDBY QUERY RESPONSE RECEIVED, AWARD DKP, CHECKs TO VERIFY ONLY AWARDS DKP ONCE.
-			elseif msg=="awardstandby" then
-				local main=""
-				if A.allowstandbyreceive then
-					for name, namestable in pairs(A.DB.standby) do
-						if sender==tostring(name) then
-							main=name
-							break
-						else
-							for i=2, #namestable do
-								if sender==namestable[i] then
-									main=name
-									break
-								end
-							end
-						end
-					end
-					
-					if not A.standby.receivedDKP[main] then
-						A:Print(main.." accepted standby query, awarding "..data.amount.." DKP for "..data.boss);
-						A.DB.standby.dkp[main]=A.DB.standby.dkp[main]+data.amount;
-						B.view.standbyFrame:UpdateList()
-						A.standby.receivedDKP[main]=true
-						if GRI:IsOnList(main) then
-							A:AddAction(main,tonumber(data.amount),"[TEST]On Standby for "..data.boss.." kill");
-						else
-							A:Print("ERROR: Could not award "..main.." standby DKP, not on GRI list.");
-						end;
-					elseif A.standby.receivedDKP[main] then
-						A:Print(main.."(on "..sender..") sent more than 1 query for standby DKP.")
-					end
-				end
 			end
 
 		end
 	end
 end
 
+
 local function noWhisperSpam(self,event,msg)
 	return string.find(msg,"<DKP.Manager>.+");
 end
 ChatFrame_AddMessageEventFilter("CHAT_MSG_WHISPER_INFORM",noWhisperSpam)
+
+
+
+
+
+
+
+
+
+
 
 

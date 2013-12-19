@@ -2,21 +2,14 @@ local gs=LibStub("GuiSkin-1.0");
 local A=LibStub("AceAddon-3.0"):GetAddon("DKP Manager");
 local B=LibStub("AceAddon-3.0"):GetAddon("DKP Bidder");
 local DKPlog=A.log;
-local tooltips={
-	["addmain"]={[1]=B.color["LIGHTRED"] .. "Add|r a new player to the list",},
-	["addalt"]={[1]=B.color["LIGHTRED"] .. "Add/Remove|r an alt from the selected player",},
-	["delmain"]={[1]=B.color["LIGHTRED"] .. "Remove|r the selected player",},
-	["print"]={[1]=B.color["LIGHTRED"] .. "Print|r the selected players' alt's to the chat frame",},
-	["status"]={[1]=B.color["LIGHTRED"] .. "Toggle|r the selected players' standby status",},
-	["resetdkp"]={[1]=B.color["LIGHTRED"] .. "Clear|r 'DKP Awarded' field",},
-}
 function A:CreateGUI()
+
 	local v=B.view;
 	v.logFrame=B:CreateLogFrame();
 	v.adminFrame=CreateFrame("Frame",B.mainFrame:GetName().."_adminFrame",UIParent);
 	local f=v.adminFrame;
 	f:SetWidth(B.mainFrame:GetWidth()-40);
-	f:SetHeight(300);
+	f:SetHeight(200);
 
 	if B.mainFrame:IsVisible() then
 		f:Show()
@@ -26,7 +19,7 @@ function A:CreateGUI()
 	--B.mainFrame:SetParent(f);
 	local func = B.mainFrame:GetScript("OnHide")
 	B.mainFrame:SetScript("OnHide",function(self) func(self); f:Hide() end)
-	local func = B.mainFrame:GetScript("OnShow")
+	func = B.mainFrame:GetScript("OnShow")
 	B.mainFrame:SetScript("OnShow",function(self) func(self); f:Show() end)
 
 
@@ -47,6 +40,7 @@ function A:CreateGUI()
 
 	--titleframe and text
 	v.titleFrame = CreateFrame("Frame",name.."_titleFrame",f)
+
 
 	v.titleString=v.titleFrame:CreateFontString(name.."_title","ARTWORK","GameFontNormal");
 	v.titleString:SetPoint("TOP",v.titleFrame,"TOP",18,-14);
@@ -79,9 +73,13 @@ function A:CreateGUI()
 	v.optionsButton:SetScript("OnClick", function()
 		LibStub("AceConfigDialog-3.0"):Open("DKP Manager");
 	end)
-	
+
 	v.titleFrame:SetHeight(40)
 	v.titleFrame:SetWidth(f:GetWidth()/3);
+
+
+
+
 	v.titleString:SetPoint("TOP", f, "BOTTOM", 0,10);
 	v.titleFrame:SetPoint("TOP",v.titleString, "TOP", 0, 12);
 	v.titleFrame:SetMovable(true)
@@ -91,15 +89,14 @@ function A:CreateGUI()
 	v.titleFrame:SetScript("OnMouseDown",function()
 		if not f.hidden then
 			f:ClearAllPoints()
-			f:SetPoint('BOTTOM', B.mainFrame,'BOTTOM', 0, -20);
+			f:SetPoint('BOTTOM', B.mainFrame,'BOTTOM', 0,-20);
 
 			f.hidden=true
 			--print("1");
 		else
 			--print("2");
 			f:ClearAllPoints()
-			--setpoint changes the height of the DKP Admin window
-			f:SetPoint('bottom', B.mainFrame,'BOTTOM', 0,-120);  --f:SetPoint('bottom', B.mainFrame,'BOTTOM', 0,-100);
+			f:SetPoint('bottom', B.mainFrame,'BOTTOM', 0,-100);
 			--print("3");
 			f.hidden=false
 		end
@@ -118,7 +115,6 @@ function A:CreateGUI()
 	v.itemLinkEditBox = CreateFrame("EditBox", name.."_itemLinkEditBox", f, "InputBoxTemplate")
 
 	v.itemLinkEditBox:SetPoint('LEFT', v.itemLinkString,'RIGHT',10 ,0)
-	v.itemLinkEditBox:SetFont([[Fonts\ARIALN.ttf]],14);
 	v.itemLinkEditBox:Show();
 	v.itemLinkEditBox:Disable();
 	v.itemLinkEditBox:SetAutoFocus(false);
@@ -156,7 +152,7 @@ function A:CreateGUI()
 
 	--Start/stop bid Button
 	v.startStopButton = CreateFrame("Button", name.."_startStopBidButton", f, "UIPanelButtonTemplate")
-	v.startStopButton:SetText("Start bidding");
+	v.startStopButton:SetText("Start  bidding");
 	v.startStopButton:SetPoint('bottom', v.awardButton,"top", 0,3)
 	v.startStopButton:SetScript("OnClick",function(self)
 		--B:Bid(v.bidEditBox:GetNumber());\
@@ -171,51 +167,9 @@ function A:CreateGUI()
 	v.startStopButton:SetWidth(150);
 	v.startStopButton:Disable();
 	--//Bid Button
-	
-	--Send to Disenchant Button
-	v.disenchantButton = CreateFrame("Button", name.."_disenchantButton", f, "UIPanelButtonTemplate")
-	v.disenchantButton:SetText("Disenchant");
-	v.disenchantButton:SetPoint('bottom', v.startStopButton,"top", 0,3)
-	v.disenchantButton:SetScript("OnClick",function(self)
-		--Send current item to Disenchanter
-		A:AwardDisenchanter();
-	  end)
-	v.disenchantButton:SetHeight(20);
-	v.disenchantButton:SetWidth(150);
-	v.disenchantButton:Disable();
-	--//Disenchant Button
-	
-	
-	--==============ADD HERE TO CREATE BUTTON TO POP OPEN THE STANDBY LIST===============--
-	v.standbyButton = CreateFrame("Button", nil, f)
-	v.standbyButton:SetFrameLevel(10)
-	--v.standbyButton:ClearAllPoints()
-	v.standbyButton:SetHeight(25)
-	v.standbyButton:SetWidth(25)
-	v.standbyButton:SetNormalTexture("Interface\\HELPFRAME\\ReportLagIcon-Chat")
-	v.standbyButton:SetHighlightTexture("Interface\\HELPFRAME\\ReportLagIcon-Chat", 0.2)
-	v.standbyButton:SetAlpha(0.8)
-	v.standbyButton:SetPoint("RIGHT", v.titleString, "LEFT", -5, -1);
-	v.standbyButton:Show()
-	v.standbyButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	v.standbyButton:SetScript("OnClick", function()
-		if B.view.standbyFrame then
-			if B.view.standbyFrame:IsShown() then
-				B.view.standbyFrame:Hide()
-			else
-				B.view.standbyFrame:Show()
-			end
-		else
-			A:CreateStandbyGUI()
-		end
-	end)
-	--====================================================================================--
-	
-	
-	
+
 	self:CreateBidButtons()
 end
-
 function A:CreateBidButtons()
 	for i=1,4 do
 		B.view["lootButton"..i]= CreateFrame("Button", "DKPLootButton"..i, _G["LootButton"..i], "UIPanelButtonTemplate")
@@ -230,7 +184,7 @@ function A:CreateBidButtons()
 			--B:Bid(v.bidEditBox:GetNumber());\
 			--if not A.biddingInProgress then
 
-			A:StartBids(GetLootSlotLink(_G["LootButton"..tostring(i)].slot));
+				A:StartBids(GetLootSlotLink(_G["LootButton"..tostring(i)].slot));
 			--else
 			--	A:StopBids();
 			--end;
@@ -254,7 +208,7 @@ end
 
 function B:CreateLogFrame()
 	--if GetNumGuildMembers()>0 then
-		local f=gs:CreateFrame(self.ver.."_LogFrame","DKP Log","BASIC",705,305,'TOPLEFT',self.view.rosterFrame,'BOTTOMLEFT',0 ,-50);
+		local f=gs:CreateFrame(self.ver.."_LogFrame","DKP Log","BASIC",690,355,'TOPLEFT',self.view.rosterFrame,'BOTTOMLEFT',0 ,-50);
 		f:Hide();
 		f:SetScript("OnShow",
 				function(self)
@@ -267,7 +221,7 @@ function B:CreateLogFrame()
 
 		local v=f.view;
 
-		local data={columns={"Date","Name","Change","Amount","Reason","Zone","Logger name"},columnsWidth={105,70,55,55,220,100,70},rows=20,height=220};
+		local data={columns={"Date","Name","Change","Amount","Reason","Zone","Logger name"},columnsWidth={130,90,55,55,150,90,90},rows=20,height=290};
 
 		v.logList=LibStub("WowList-1.0"):CreateNew(self:GetName().."_logList",data,f);
 		v.logList:SetPoint('TOPLEFT', f,'TOPLEFT', 16,-30);
@@ -339,20 +293,3 @@ function B:CreateLogFrame()
 	--end;
 
 end;
-
-function A:OnEnter(self,arg)
-	--if pDB.enable.tooltips then
-		GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
-		for i=1,#tooltips[arg] do
-			GameTooltip:AddLine(tooltips[arg][i],1,1,1,1)
-		end
-		GameTooltip:Show()
-	--end
-end
-
-function A:OnLeave(self)
-	--if pDB.enable.tooltips then
-		GameTooltip:Hide()
-		GameTooltip:ClearLines()
-	--end
-end

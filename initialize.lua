@@ -15,18 +15,23 @@ DB.minBid=0;
 DB.zeroSum=true;
 DB.broadcastBidderUpdate=false;
 DB.silenceBidding=true;
-DB.allowbidremove=true;
 
-A.ver="530 101";
+
+
+
+A.ver="520 210";
 A.isInRaidGroup=false;
-A.standby={}
-A.standby={allowreceive=false,receivedDKP={}}
+
+
+-----------------------------
+-------/------------
+-------------------------------
 
 function A:GROUP_ROSTER_UPDATE()
 
 	if not UnitInRaid("player") then
 		if A.biddingInProgress then
-			self:Print("Ending bidding because you left the raid group");
+			self:Print("Ending bidding becouse you left the raid group");
 			self:StopBids();
 		end;
 		self.isInRaidGroup=false;
@@ -39,7 +44,6 @@ function A:GROUP_ROSTER_UPDATE()
 
 
 end
-
 function A:OnInitialize()
 	self:CreateGUI();
 	self:RegisterEvent("LOOT_OPENED");
@@ -63,7 +67,7 @@ function A:OnInitialize()
 		notCheckable = 1,
 	});
 	table.insert(B.dropDownMenuTable,(#B.dropDownMenuTable-1),{
-		text = "Add/Remove DKP",
+		text = "Increase/Reduce DKP",
 		func = function()
 			local v=B.view.rosterFrame.view;
 			local point=v.bidderList:GetSelected();
@@ -102,56 +106,6 @@ function A:OnInitialize()
 						if number then
 
 							A:ChangeAmounts(number,mains);--/script for i=1,20 do LibStub("AceAddon-3.0"):GetAddon("DKP Bidder"):Transfer(10,{"Mogrhana"}); end
-						end
-					end,
-					timeout = 0,
-
-				}
-				StaticPopup_Show("DKPBidder_TitleDropDownMenu_ChangeDKPStaticPopup");
-			end
-		end,
-		notCheckable = 1,
-	});
-	table.insert(B.dropDownMenuTable,(#B.dropDownMenuTable-1),{
-		text = "Add/Remove Overall DKP(No net change)",
-		func = function()
-			local v=B.view.rosterFrame.view;
-			local point=v.bidderList:GetSelected();
-			if point~=nil then
-				local text="Type the change amount for following players: "
-				local onlyMains={};
-				local sep="";
-				local mains={};
-				for i=1,#point do
-						text=text..sep..point[i][1].data.name;
-						table.insert(mains,point[i][1].data.name);
-						sep=",";
-				end
-				text=text..".";
-
-				if StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPStaticPopup"]~=nil then table.wipe(StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPStaticPopup"]); end;
-				StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPStaticPopup"] = {
-					text = text,
-					whileDead = true,
-					enterClicksFirstButton=1,
-					hideOnEscape = 1,
-					hasEditBox=true,
-					button1 = "Change amounts",
-					button2 = "Cancel",
-					EditBoxOnTextChanged = function (self, data)
-						-- careful! 'self' here points to the editbox, not the dialog
-						self:GetParent().button1:Enable()          -- self:GetParent() is the dialog
-					end,
-					EditBoxOnEnterPressed = function(self) StaticPopup_OnClick(self:GetParent(), 1) end,
-					EditBoxOnEscapePressed = function(self) StaticPopup_OnClick(self:GetParent(), 2) end,
-					OnShow = function (self, data)
-						self.button1:Disable();
-					end,
-					OnAccept = function(self, data, data2)
-						local number=self.editBox:GetNumber();
-						if number then
-
-							A:ChangeTotAmounts(number,mains);--/script for i=1,20 do LibStub("AceAddon-3.0"):GetAddon("DKP Bidder"):Transfer(10,{"Mogrhana"}); end
 						end
 					end,
 					timeout = 0,
@@ -253,7 +207,6 @@ function A:OnInitialize()
 	});
 
 end
-
 function A:ChangeAmounts(number,mains)
 	if StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPReason"]~=nil then table.wipe(StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPReason"]); end;
 	StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPReason"] = {
@@ -287,49 +240,15 @@ function A:ChangeAmounts(number,mains)
 	StaticPopup_Show("DKPBidder_TitleDropDownMenu_ChangeDKPReason");
 end
 
-function A:ChangeTotAmounts(number,mains)
-	if StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPReason"]~=nil then table.wipe(StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPReason"]); end;
-	StaticPopupDialogs["DKPBidder_TitleDropDownMenu_ChangeDKPReason"] = {
-		text = "What reason?",
-		hasEditBox=true,
-		button1 = "Change amounts",
-		button2 = "Cancel",
-		EditBoxOnTextChanged = function (self, data)
-			self:GetParent().button1:Enable()
-		end,
-		EditBoxOnEnterPressed = function(self) StaticPopup_OnClick(self:GetParent(), 1) end,
-		EditBoxOnEscapePressed = function(self) StaticPopup_OnClick(self:GetParent(), 2) end,
-		OnShow = function (self, data)
-			self.mains=mains;
-			self.button1:Disable();
-
-		end,
-		OnAccept = function(self, data, data2)
-			local reason=self.editBox:GetText();
-
-			for i=1,#mains do
-				--print(mains[i],number,reason);
-				A:AddTotAction(mains[i],number,reason);
-			end
-		end,
-		timeout = 0,
-		whileDead = true,
-		enterClicksFirstButton=true,
-		hideOnEscape = true,
-	}
-	StaticPopup_Show("DKPBidder_TitleDropDownMenu_ChangeDKPReason");
-end
-
 function A:SetBiddingState(bidMaster)
 	local v=B.view.adminFrame.view;
 
 	if bidMaster then
-		v.disenchantButton:Disable();
+
 		v.startStopButton:SetText("Stop bidding");
 		A.biddingInProgress=true
 	else
 		v.awardButton:Disable();
-		v.disenchantButton:Enable();
 		v.startStopButton:SetText("Start bidding");
 		A.biddingInProgress=false
 	end
@@ -338,10 +257,9 @@ end
 function A:ChatEdit_InsertLink(link)
 	if B.view.adminFrame:IsVisible() and link:find("|Hitem") then  B.view.adminFrame.view.itemLinkEditBox:SetText(link); end;
 end
-
 A.printedItems={};
-
 function A:LOOT_OPENED()
+
 	local method, partyMaster, raidMaster = GetLootMethod()
 	local guid=UnitGUID("target")
 	local target=UnitName("target");
@@ -367,6 +285,7 @@ function A:LOOT_OPENED()
 			if n>0 then
 				SendChatMessage("<DKP-Manager> ".."Items dropped by "..target..":","RAID");
 				for i=1,GetNumLootItems() do
+
 					if LootSlotHasItem(i) then
 						local texture, item, quantity, quality, locked = GetLootSlotInfo(i)
 						if quality>=GetLootThreshold() then
@@ -380,43 +299,34 @@ function A:LOOT_OPENED()
 		end;
 		self:LootFrame_Update()
 	else
-		--TODO does this have to be called everytimne on loot opened? :/
-		for i=1,GetNumLootItems() do
-			if _G["LootButton"..tostring(i)] then
-				--self:Print("Hide, out of raid, lootButton"..i)
-				B.view["lootButton"..i]:Hide();
-			end
-		end
+		for i=1,4 do B.view["lootButton"..i]:Hide(); end--TODO does this have to be called everytimne on loot opened? :/
 	end;
 
 end
-
 function A:LootFrame_Update()
-	for i=1,GetNumLootItems() do
-		if _G["LootButton"..tostring(i)] then
-			local lootB=_G["LootButton"..tostring(i)]
-			--print(lootB.quality);
-			if lootB.quality and LootSlotHasItem(i) and lootB.quality>=GetLootThreshold() then
-				--self:Print("Show lootButton"..i)
-				B.view["lootButton"..i]:Show()
-			else
-				--self:Print("Hide lootButton"..i)
-				B.view["lootButton"..i]:Hide()
-			end
+	for i=1,4 do
+		local lootB=_G["LootButton"..tostring(i)]
+		--print(lootB.quality);
+		if lootB.quality and LootSlotHasItem(i) and lootB.quality>=GetLootThreshold() then
+			B.view["lootButton"..i]:Show()
+		else
+			B.view["lootButton"..i]:Hide()
 		end
 	end
 end
 
+
 function A:Print(msg)
 	DEFAULT_CHAT_FRAME:AddMessage(B.colors["grey"].."DKP - |r|CFF2459FFManager"..B.colors["grey"].."> "..B.colors["close"]..msg);
 end
+
 
 local function awardDKPtoRaid(amount,boss)
 	local method, partyMaster, raidMaster = GetLootMethod()
 	if method=="master"and GetRaidRosterInfo(raidMaster)==UnitName("player") then
 		for i=1, MAX_RAID_MEMBERS do
 			name=GetRaidRosterInfo(i);
-			if name and GRI:IsOnList(name) then
+			if GRI:IsOnList(name) then
 				A:AddAction(name,tonumber(amount),"Award for killing "..boss);
 			end;
 		end;
@@ -433,7 +343,7 @@ local function awardDKPtoRaid(amount,boss)
 			OnAccept = function(self, data, data2)
 				for i=1, MAX_RAID_MEMBERS do
 					name=GetRaidRosterInfo(i);
-					if name and GRI:IsOnList(name) then
+					if GRI:IsOnList(name) then
 						A:AddAction(name,tonumber(amount),"Award for killing "..boss);
 					end;
 				end;
@@ -446,39 +356,17 @@ local function awardDKPtoRaid(amount,boss)
 	end;
 end
 
---REMINDER
---make it a local functiona and remove the commented out raid check.
-local function queryStandbyList(amount,boss)
-	local method, partyMaster, raidMaster = GetLootMethod()
-	if method=="master"and GetRaidRosterInfo(raidMaster)==UnitName("player") and A.DB.standby then
-		A.allowstandbyreceive=true
-		A:ScheduleTimer(function()
-			A.allowstandbyreceive=false
-			A:Print("Auto-Award Standby DKP window has ended.")
-		end, 75)
-		for name, namestable in pairs(A.DB.standby) do
-			if name and tostring(name)~="dkp" and tostring(name)~="disabled" and not A.DB.standby.disabled[name] and GRI:IsOnList(name) then
-				for i=1, #namestable do
-					A:Send("querystandby",{amount=amount,boss=boss},"WHISPER", namestable[i]);
-					--SendChatMessage("<DKP-Manager> "..boss.." has been slain! Popup window will display in ~10 seconds, click 'Yes' to receive DKP", "WHISPER", nil, namestable[i]);
-					SendChatMessage("<(Standby)DKP-Manager> "..boss.." has been slain! Popup window will display in ~10 seconds, click 'Yes' to receive DKP", "WHISPER", nil, namestable[i]);
-				end
-			end
-		end;
-	end
-end
-
 function A.BossKill(event,mod) --/script DKPmanager.BossKill("kill",{combatInfo={name="Ultraxion"}})
 	local boss=mod.combatInfo.name;
 
 	if DB.bossesDKP.enabled and DB.bossesDKP.bosses[boss]then
 
-		local difficulties={[3]="10-man normal",[4]="25-man normal",[5]="10-man heroic",[6]="25-man heroic"};
+		local difficulties={"10-man normal","25-man normal","10-man heroic","25-man heroic"};
 
-		local difficulty=difficulties[GetRaidDifficultyID()]
+		local difficulty=difficulties[GetRaidDifficultyID()-2]
 		local amount=-1;
-		A.Print(A,"Boss killed! "..boss);
 
+		A.Print(A,"Boss killed! "..boss);
 		if DB.bossesDKP.bosses[boss].patch.perpatch then --per patch!
 
 			amount= DB.bossesDKP.bosses[boss].patch[difficulty].dkp;
@@ -494,8 +382,10 @@ function A.BossKill(event,mod) --/script DKPmanager.BossKill("kill",{combatInfo=
 
 		end
 		awardDKPtoRaid(amount,boss);
-		queryStandbyList(amount,boss);
+
 	end
+
+
 	--printTable(mod.combatInfo);
 end
 local function addBossEncounter(patch,instance,bosses)
@@ -638,7 +528,7 @@ local function addBossEncounter(patch,instance,bosses)
 					instanceDKPonly={
 						name="Award per instance",
 						type="toggle",
-						desc = "Turn this off to set dkp points awarded per boss.",
+						desc = "Turn this off to set dkp points awareded per boss.",
 						set = function(info,val)
 							DB.bossesDKP.instance[instance][name].perinstance = val;
 							insTypes[name] = val and DB.bossesDKP.instance[instance][name].optPerInstance or DB.bossesDKP.instance[instance][name].optPerBoss;
@@ -710,7 +600,7 @@ local function addBossEncounter(patch,instance,bosses)
 
 		end
 		insTypes[name]=DB.bossesDKP.instance[instance][name].perinstance and DB.bossesDKP.instance[instance][name].optPerInstance or DB.bossesDKP.instance[instance][name].optPerBoss;
-		--print("called with",name);
+		--print("callled with",name);
 
 
 	end
@@ -733,7 +623,6 @@ function A:OnEnable()
 	DB=DKPmanagerDB;
 	A.DB=DB;
 	A.log:SetDB(DB.log);
-	
 
 	if DB.timerAmount==nil then DB.timerAmount=30; end;
 	if DB.awardIfStopBidsOnTimeOut==nil then DB.awardIfStopBidsOnTimeOut=false; end;
@@ -741,10 +630,6 @@ function A:OnEnable()
 	if DB.autoStartTimer==nil then DB.autoStartTimer=false; end;
 	if DB.autoRestartTimer==nil then DB.autoRestartTimer=false; end;
 	if DB.tunnelPlayer==nil then DB.tunnelPlayer={}; end;
-	if DB.dkpCap==nil then DB.dkpCap=0; end;
-	A.log:SetCap(DB.dkpCap);
-	if DB.standby==nil then DB.standby={}; DB.standby={dkp={},disabled={}}; end;
-	if DB.disenchantPlayer==nil then DB.disenchantPlayer=""; end;
 
 	LibStub("AceConfigDialog-3.0"):AddToBlizOptions("DKP Manager", "DKP Manager")
 	--LibStub("AceConfigDialog-3.0"):SetDefaultSize("DKP Manager", 400, 250)
@@ -762,10 +647,11 @@ function A:OnEnable()
 
 		addBossEncounter("MoP","Pandaria",{"Sha of Anger", "Salyis's Warband"});
 		addBossEncounter("MoP","Terrace of Endless Spring",{"Protectors of the Endless", "Tsulong", "Lei Shi", "Sha of Fear"});
-		addBossEncounter("MoP","Throne of Thunder",{"Jin'rokh the Breaker", "Horridon", "Council of Elders", "Tortos", "Megaera", "Ji-Kun", "Durumu the Forgotten", "Primordius", "Dark Animus", "Iron Qon", "Twin Consorts", "Lei Shen", "Ra-den"});
+		addBossEncounter("MoP","Throne of Thunder",{"Jin'rokh the Breaker", "Horridon", "Council of Elders", "Tortos","Megaera", "Ji-Kun", "Durumu the Forgotten", "Primordius", "Dark Animus","Iron Qon","Twin Consorts","Lei Shen","Ra-den"});
 		--NOTE: when u remove one line of the above, those will still stay in users DB, so they should either be removed or code should be adjusted to nor print those that are not added in here.
 	else
 		self:Print("DBM not found, Boss Auto Award disabled.");
+
 	end
 
 
@@ -774,6 +660,10 @@ function A:OnEnable()
 
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("DKP Manager", A.optionsTable, {"dkpmanager", "dkpm"});
 end
+
+
+
+
 
 function A:OnDisable()
 
@@ -792,37 +682,23 @@ A.optionsTable = {
 			minBid={
 				name="Minimum bid",
 				type = "input",
-				order=50,
+				order=110,
 				pattern="%d+";
 				usage="Minimum bid must be a number.";
 				set = function(info,val) local a=tonumber(val);if a~=nil then DB.minBid=a;end; end,
 				get = function(info) return tostring(DB.minBid);  end,
 			},
 			minBid_nl = {
-				order = 51,
+				order = 111,
 				type = "description",
 				name = "",
 			},
-			dkpCap={
-				name="Auto Cap DKP: ",
-				type = "input",
-				order=60,
-				pattern="%d+";
-				usage="Set a static cap to all players' DKP, must be a number. Enter "..B.colors.green.."'0'|r to disable.";
-				set = function(info,val) local a=tonumber(val);if a~=nil then DB.dkpCap=a; A.log:SetCap(DB.dkpCap); end; end,
-				get = function(info) return tostring(DB.dkpCap);  end,
-			},
-			dkpCap_nl = {
-				order = 61,
-				type = "description",
-				name = "",
-			},
-			
+
 			biddingType={
 				name="Method",
 				type="select",
 				values={sh="Second Highest",norm="Normal"},
-				desc = "Set's the way winner is going to be charged. If "..B.colors.green.."'Normal'|r, player will pay the highest value that they bid. "..B.colors.green.."'Second highest'|r, player will pay the second highest amount that was bid by another person or minimum bid if no other bids",
+				desc = "Set's the way winner is going to be charged. If 'normal', then he will pay the highest value that he bid. With second highest, he will pay the second highest amount that was bid by another person.",
 				set = function(info,val) DB.biddingType=val; end,
 				get = function(info) return DB.biddingType;  end,
 				order=120,
@@ -833,17 +709,17 @@ A.optionsTable = {
 				name = "",
 			},
 			zeroSum={
-				name="Zero Sum Bidding",
+				name="zero sum",
 				type="toggle",
-				desc = "Enables / Disables Zero Sum DKP Award",
+				desc = "Enables / disables zero sum dkp award.",
 				set = function(info,val) DB.zeroSum = val end,
 				get = function(info) return DB.zeroSum end,
 				order=140,
 			},
 			silenceBid={
-				name="Silent Bidding",
+				name="silence bidding",
 				type="toggle",
-				desc = "Enables / Disables Silent Bidding",
+				desc = "Enables / disables silence bidding.",
 				set = function(info,val) DB.silenceBidding = val end,
 				get = function(info) return DB.silenceBidding end,
 				order=150,
@@ -854,23 +730,16 @@ A.optionsTable = {
 				name = "",
 			},
 			transferDkp={
-				name="Transfer DKP",
+				name="transfer dkp",
 				type="toggle",
-				desc = "Enables / Disables your Manager the ability to allow players to transfer DKP",
+				desc = "Enables / disables possibility to transfer dkp by you.",
 				set = function(info,val) DB.canTransferDKP = val end,
 				get = function(info) return DB.canTransferDKP end,
 				order=160,
 			},
-			removeBid={
-				name="Allow Bid Removal",
-				type="toggle",
-				desc = "Allows / Disallows players to remove their bid by bidding '0' "..B.colors.green.."[Silent Bidding Only]|r",
-				set = function(info,val) DB.allowbidremove = val end,
-				get = function(info) return DB.allowbidremove end,
-				order=170,
-			},
 
-			h7={
+
+			h6={
 				name="Timer settings",
 				type="header",
 				order=230,
@@ -878,7 +747,7 @@ A.optionsTable = {
 			autoStartTimer={
 				name="Auto-start",
 				type="toggle",
-				desc = "Start timer automatically when bidding was started.",
+				desc = "Start timer automaticly when bidding was started.",
 				set = function(info,val) DB.autoStartTimer = val end,
 				get = function(info) return DB.autoStartTimer end,
 				order=240,
@@ -886,7 +755,7 @@ A.optionsTable = {
 			autoRestartTimer={
 				name="Restart on bid",
 				type="toggle",
-				desc = "Restarts the timer for each new bid received.",
+				desc = "Restarts the timer when bid have been received.",
 				set = function(info,val) DB.autoRestartTimer= val end,
 				get = function(info) return DB.autoRestartTimer end,
 				order=250,
@@ -907,7 +776,7 @@ A.optionsTable = {
 			awardIfStopBidsOnTimeOut={
 				name="Auto-award",
 				type="toggle",
-				desc = "Award player automatically when the bidding was stoped by the timer.",
+				desc = "Award player automaticly when the bidding was stoped by the timer.",
 				set = function(info,val) DB.awardIfStopBidsOnTimeOut= val end,
 				get = function(info) return DB.awardIfStopBidsOnTimeOut end,
 				order=270,
@@ -926,14 +795,6 @@ A.optionsTable = {
 				set = function(info,val) local a=tonumber(val);if a~=nil then DB.timerAmount=a;end; end,
 				get = function(info) return tostring(DB.timerAmount);  end,
 			},
-			disenchantPlayer={
-				name="Disenchant Player:",
-				type = "input",
-				order=290,
-				usage="Must be a player name in your raid group.";
-				set = function(info,val) local a=val;if a~=nil then DB.disenchantPlayer=a;end; end,
-				get = function(info) return tostring(DB.disenchantPlayer);  end,
-			},
 		}
 	},
 	guildCommands={
@@ -941,7 +802,7 @@ A.optionsTable = {
 		type="group",
 		order=20,
 		args={
-			h3={
+			h4={
 				name="Dkp backup",
 				type="header",
 				order=170,
@@ -1096,8 +957,10 @@ A.optionsTable = {
 
 		}
 	},
-}}
 
+
+
+}}
 
 
 
@@ -1140,35 +1003,26 @@ function A:LaunchCap(cap)
 	self:Print("Cap function run.");
 end
 
---/script DKPmanager:LaunchOnTime(25)
+--/script DKPmanager:LaunchOnTime(25) --todo: remake this function as its crappy written guild with 100 players will cause this to run 4000 times the loop instead of 10-40.
 function A:LaunchOnTime(amount)
 
-	if GetNumGroupMembers() > 1 then
-		for i=1,40 do
-			local inraidname = GetRaidRosterInfo(i);
-			if inraidname then
-				A:AddAction(inraidname,amount,"OnTime bonus: "..amount..".");
-			end
-		end;
-	end;
-	self:Print("OnTime function run.");
-end
-
---/script DKPmanager:TotalDKPChange(-100, "Feja")
-function A:TotalDKPChange(amount, player)
-	--A:AddAction(player,amount,"TESTING");
-	A:AddTotAction(player,amount,"Fix Overall DKP by "..amount);
-	self:Print("Reducing "..player.."'s Overall DKP by "..amount);
-end
-
-function A:ClearDKP()
 	local players=GRI:GetMainPlayers();
 	for i=1,#players do
 
-		local name=players[i];
-		local net= GRI:GetNet(name);
-		local tot= GRI:GetTot(name);
-		A:AddAction(name,-net,"Clearing DKP!!!");
-		A:AddTotAction(name, -tot, "Clearing Total Field")
+		local name= players[i];
+		local net = GRI:GetNet(name);
+
+		if GetNumGroupMembers() > 1 then
+			for i=1,40 do
+
+				local inraidname = GetRaidRosterInfo(i);
+
+				if inraidname == name then
+					A:AddAction(name,amount,"OnTime bonus: "..amount..".");
+				end;
+			end;
+		end;
 	end;
+
+	self:Print("OnTime function run.");
 end
