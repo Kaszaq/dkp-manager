@@ -19,7 +19,7 @@ DB.silenceBidding=true;
 
 
 
-A.ver="520 210";
+A.ver="542 210";
 A.isInRaidGroup=false;
 
 
