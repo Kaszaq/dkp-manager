@@ -837,8 +837,11 @@ A.optionsTable = {
 							button1 = "Restore",
 							button2 = "Cancel",
 							OnAccept = function(self, data, data2)
+							
+								local realmName="-"..GetRealmName();
 								for i=1,total do
 									local name, rank, rankIndex, level, class, zone, note, officernote, online, status, classFileName, achievementPoints, achievementRank, isMobile = GetGuildRosterInfo(i)
+									name=string.gsub(name, realmName, "")
 									if DB.backupOfficerNotes[name] then
 										GuildRosterSetOfficerNote(i,DB.backupOfficerNotes[name]);
 									end
