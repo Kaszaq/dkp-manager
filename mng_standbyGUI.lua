@@ -22,7 +22,6 @@ function A:CreateStandbyGUI()
 	v.resetdkpButton:Show()
 	
 	v.testFunctionButton=gs:CreateButton(name.."_testFunctionButton", "TEST", 45, "LEFT", v.printaltButton,"RIGHT", 1, 25)
-	v.testFunctionButton:Hide()
 	
 	
 	v.inputBox:SetScript("OnEnterPressed", function(self)
