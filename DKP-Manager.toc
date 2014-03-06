@@ -4,5 +4,5 @@
 ## Dependencies:DKP-Bidder
 ## OptionalDeps: DBM-Core
 ## SavedVariablesPerCharacter: DKPmanagerDB
-## Version: 542 2xx
+## Version: 542 211
 embeds.xml
