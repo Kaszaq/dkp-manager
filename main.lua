@@ -6,7 +6,7 @@ local GRI=LibStub("GuildRosterInfo-1.0");
 DKPmanagerDB={};
 local A=DKPmanager;
 local DB=DKPmanagerDB;
-A.ver="542 211";
+A.ver="542 212";
 A.log=Log;
 A.prefix="dkp_manager";
 DB.log={};
@@ -645,7 +645,8 @@ function A:OnEnable()
         addBossEncounter("MoP","Pandaria",{"Sha of Anger", "Salyis's Warband"});
         addBossEncounter("MoP","Terrace of Endless Spring",{"Protectors of the Endless", "Tsulong", "Lei Shi", "Sha of Fear"});
         addBossEncounter("MoP","Throne of Thunder",{"Jin'rokh the Breaker", "Horridon", "Council of Elders", "Tortos","Megaera", "Ji-Kun", "Durumu the Forgotten", "Primordius", "Dark Animus","Iron Qon","Twin Consorts","Lei Shen","Ra-den"});
-        --NOTE: when u remove one line of the above, those will still stay in users DB, so they should either be removed or code should be adjusted to nor print those that are not added in here.
+        addBossEncounter("MoP","Siege of Orgrimmar",{"Immerseus", "The Fallen Protectors", "Norushen", "Sha of Pride","Galakras", "Iron Juggernaut", "Kor'kron Dark Shaman", "General Nazgrim", "Malkorok","Spoils of Pandaria","Thok the Bloodthirsty", "Siegecrafter Blackfuse","Paragons of the Klaxxi","Garrosh Hellscream"});
+		--NOTE: when u remove one line of the above, those will still stay in users DB, so they should either be removed or code should be adjusted to nor print those that are not added in here.
     else
         self:Print("DBM not found, Boss Auto Award disabled.");
         
