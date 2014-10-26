@@ -19,7 +19,7 @@ DB.silenceBidding=true;
 
 
 
-A.ver="542 210";
+A.ver="602.0.0";
 A.isInRaidGroup=false;
 
 
