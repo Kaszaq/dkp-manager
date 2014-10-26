@@ -6,7 +6,7 @@ local GRI=LibStub("GuildRosterInfo-1.0");
 DKPmanagerDB={};
 local A=DKPmanager;
 local DB=DKPmanagerDB;
-A.ver="542 212";
+A.ver="602.0.0";
 A.log=Log;
 A.prefix="dkp_manager";
 DB.log={};
@@ -16,6 +16,7 @@ DB.minBid=0;
 DB.zeroSum=true;
 DB.broadcastBidderUpdate=false;
 DB.silenceBidding=true;
+
 
 A.isInRaidGroup=false;
 
